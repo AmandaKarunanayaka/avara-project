@@ -1,0 +1,14 @@
+.no-hover {
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+.no-hover:hover {
+  background-color: transparent !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+.profile{
+    color: oklch(0.145 0 0);
+}
