@@ -36,13 +36,13 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/Dashboard",
       icon: House,
       isActive: true
     },
     {
       title: "Smart Research",
-      url: "#",
+      url: "/Research",
       icon: Binoculars,
       isActive: true
     },

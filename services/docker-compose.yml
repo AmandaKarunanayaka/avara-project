@@ -1,0 +1,60 @@
+services:
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./auth-service/.env
+    
+
+  core-business-service:
+    build: ./core-business-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - mongo
+
+  pitch-service:
+    build: ./pitch-service
+    ports:
+      - "3003:3003"
+    depends_on:
+      - mongo
+
+  research-service:
+    build: ./research-service
+    ports:
+      - "3004:3004"
+    depends_on:
+      - mongo
+
+  risk-service:
+    build: ./risk-service
+    ports:
+      - "3005:3005"
+    depends_on:
+      - mongo
+
+  roadmap-service:
+    build: ./roadmap-service
+    ports:
+      - "3006:3006"
+    depends_on:
+      - mongo
+
+  task-service:
+    build: ./task-service
+    ports:
+      - "3007:3007"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
