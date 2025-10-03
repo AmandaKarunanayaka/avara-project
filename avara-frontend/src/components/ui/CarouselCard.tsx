@@ -4,7 +4,6 @@ import { BackgroundBeams } from "@/components/ui/background-beams"
 import type { FC, ReactNode } from "react"
 import '/src/css/carousel.css';
 
-
 interface CarouselCardProps {
   title: string
   description: string
@@ -34,30 +33,43 @@ const CarouselCard: FC<CarouselCardProps> = ({
         style={{
           position: "relative",
           zIndex: 1,
-          backgroundColor: "#2a2b32", // ChatGPT dark mode light grey
-          borderColor: "#3f4047",      // subtle border contrast
+          backgroundColor: "#2a2b32",
+          borderColor: "#3f4047",
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
           backdropFilter: "blur(16px)",
         }}
-      >        <CardContent
-        className={`py-12 px-8 text-white card-content ${layout === "left"
-          ? "layout-left text-left items-start"
-          : layout === "right"
-            ? "text-right items-end"
-            : "text-center items-center"
-          }`}
       >
+        <CardContent
+          className={`py-12 px-8 text-white card-content flex flex-col gap-6 ${
+            layout === "left"
+              ? "text-left items-start"
+              : layout === "right"
+              ? "text-right items-end"
+              : "text-center items-center"
+          }`}
+        >
           <h1 className="text-2xl sm:text-3xl font-bold">{title}</h1>
           <p className="text-muted-foreground text-base">{description}</p>
-          <div>{children}</div>
-          <div className="flex justify-center gap-4 pt-6">
+
+          {/* Render input/children */}
+          <div className="w-full">{children}</div>
+
+          {/* Push buttons further down with gap */}
+          <div className="flex justify-center gap-4 pt-10">
             {showBack && (
-              <Button variant="outline" onClick={onBack} className="bg-yellow-500 text-black hover:bg-yellow-600">
+              <Button
+                variant="outline"
+                onClick={onBack}
+                className="bg-yellow-500 text-black hover:bg-yellow-600"
+              >
                 Back
               </Button>
             )}
             {onNext && (
-              <Button onClick={onNext} className="bg-yellow-500 text-black hover:bg-yellow-600">
+              <Button
+                onClick={onNext}
+                className="bg-yellow-500 text-black hover:bg-yellow-600"
+              >
                 {nextLabel}
               </Button>
             )}

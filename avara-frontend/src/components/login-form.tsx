@@ -1,8 +1,8 @@
+import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface LoginFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -12,14 +12,15 @@ interface LoginFormProps extends React.HTMLAttributes<HTMLFormElement> {
 export function LoginForm({ className, ...props }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (localStorage.getItem("token")) navigate("/");
-  }, [navigate]);
-
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
     try {
       const res = await fetch("http://localhost:3001/api/auth/login", {
         method: "POST",
@@ -29,15 +30,17 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
       const data = await res.json();
 
-      if (res.ok) {
+      if (res.ok && data.token) {
         localStorage.setItem("token", data.token);
         navigate("/");
       } else {
-        alert(data.message || "Login failed");
+        setError(data.message || "Login failed");
       }
     } catch (err) {
       console.error("Login error:", err);
-      alert("Network error. Please try again.");
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -53,6 +56,13 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
           Enter your email below to login to your account
         </p>
       </div>
+
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+          {error}
+        </div>
+      )}
+
       <div className="grid gap-6">
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
@@ -63,13 +73,16 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
+
         <div className="grid gap-3">
           <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
             <a
               href="#"
+              onClick={(e) => e.preventDefault()}
               className="ml-auto text-sm underline-offset-4 hover:underline"
             >
               Forgot your password?
@@ -81,10 +94,12 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            disabled={loading}
           />
         </div>
-        <Button type="submit" className="w-full">
-          Login
+
+        <Button type="submit" className="w-full" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
         </Button>
       </div>
     </form>

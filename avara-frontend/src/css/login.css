@@ -44,6 +44,20 @@
     opacity: 0.85;
 }
 
+body {
+    background-color: rgba(0, 0, 0, 0.856);
+}
+
+
+
+.w-button{
+    color: black;
+    background-color: white;
+}
+
+.w-button:hover{
+    background-color: #e3e3e3e2;
+}
 /* === RESPONSIVE STYLING === */
 @media (max-width: 1024px) {
 
