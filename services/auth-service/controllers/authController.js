@@ -6,7 +6,7 @@ const generateToken = (id) => {
   if (!secret) {
     throw new Error('JWT_SECRET is not set in environment variables');
   }
-  const expiresIn = process.env.JWT_EXPIRES_IN || '1d';
+  const expiresIn = process.env.JWT_EXPIRES_IN || '1h';
   return jwt.sign({ id }, secret, { expiresIn });
 };
 

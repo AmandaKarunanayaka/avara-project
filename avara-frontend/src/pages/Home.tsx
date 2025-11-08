@@ -10,14 +10,13 @@ export default function Home() {
 
   const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && projectName.trim() !== "") {
-      window.location.href = "/questions-menu" // redirect
+      window.location.href = "/question"
     }
   }
 
   return (
     <>
-      {/* Wrap everything so we can blur the full background when modal is open */}
-      <div className={showModal ? "blur-sm" : ""}> {/* ✅ full background blur */}
+      <div className={`flex flex-col gap-4 h-full content ${showModal ? "blur-sm" : ""}`}> 
         <section className="main-content">
           <div className="header">
             <h1 className="scroll-m-20 text-center text-4xl tracking-tight text-balance heading">
@@ -44,7 +43,6 @@ export default function Home() {
               className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center cursor-pointer hover:bg-muted transition"
               onClick={() => setShowModal(true)}
             >
-              {/* ✅ Plus icon black */}
               <PlusIcon className="h-10 w-10 text-black" />
             </div>
 
@@ -54,13 +52,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min large-card" />
+        <div className="flex-1 rounded-xl bg-muted/50 min-h-0 large-card" />
+
       </div>
 
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-          {/* ✅ Modal background black */}
           <div className="bg-black rounded-xl p-6 w-[90%] max-w-md shadow-xl text-white">
             <h2 className="text-xl font-semibold mb-4">New Project</h2>
             <Input
@@ -71,7 +69,6 @@ export default function Home() {
               onKeyDown={handleEnter}
               className="mb-6 bg-gray-800 text-white border-gray-600"
             />
-            {/* ✅ Buttons same width, centered */}
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setShowModal(false)}
@@ -82,7 +79,7 @@ export default function Home() {
               <button
                 onClick={() => {
                   if (projectName.trim() !== "") {
-                    window.location.href = "/questions-menu"
+                    window.location.href = "/question"
                   }
                 }}
                 className="w-32 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700"

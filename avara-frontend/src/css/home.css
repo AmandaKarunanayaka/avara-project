@@ -1,9 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Electrolize&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
 
+.content {
+    font-family: "Noto Sans JP", sans-serif;
+}
+
 .main-content {
-    margin-top: 35px;
-    margin-bottom: 50px;
+    margin-top: 30px;
+    margin-bottom: 30px;
 }
 
 .heading {
@@ -54,11 +58,11 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .content-cards > .grid > div,
 .large-card {
-  background: rgba(255, 255, 255, 0.151); /* translucent white */
-  border: 1px solid rgba(255, 255, 255, 0.24); /* light translucent border */
-  backdrop-filter: blur(10px); /* the key frosted glass blur */
-  -webkit-backdrop-filter: blur(10px); /* Safari support */
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* subtle shadow */
+  background: rgba(255, 255, 255, 0.151);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
   border-radius: 1rem; 
   transition: background 0.3s ease, box-shadow 0.4s ease, border-color 0.3s ease;
 }
@@ -69,3 +73,27 @@ input[type="search"]::-webkit-search-cancel-button {
   box-shadow: 0 1px 2px rgba(255, 255, 255, 0.132);
 }
 
+.header-text {
+    margin-top: 20px;
+    font-size: 2.5rem;
+    font-weight: bold;
+    letter-spacing: 0.1px;
+}
+
+.custom-card {
+    border-radius: 0.75rem;
+    border: 1px solid rgb(235, 235, 235);
+    background: linear-gradient(to top, rgba(72, 72, 72, 0.3), rgba(30, 30, 31, 0.5));
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(7px);
+    color: white;
+}
+
+.larger-card {
+    border-radius: 0.75rem;
+    border: 1px solid rgb(235, 235, 235);
+    background: linear-gradient(to top, rgba(72, 72, 72, 0.3), rgba(30, 30, 31, 0.5));
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(7px);
+    color: white;
+}
