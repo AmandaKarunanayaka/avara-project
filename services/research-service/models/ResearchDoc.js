@@ -6,13 +6,7 @@ const CitationSchema = new mongoose.Schema(
 );
 
 const SectionSchema = new mongoose.Schema(
-  {
-    id: String, 
-    title: String,
-    critical: Boolean, 
-    html: String,
-    citations: [CitationSchema]
-  },
+  { id: String, title: String, critical: Boolean, html: String, citations: [CitationSchema] },
   { _id: false }
 );
 
@@ -47,14 +41,17 @@ const TimelineItemSchema = new mongoose.Schema(
 
 const ResearchDocSchema = new mongoose.Schema(
   {
-    projectId: { type: String, index: true, unique: true },
+    userId: { type: mongoose.Types.ObjectId, ref: "User", index: true, required: true },
+    projectId: { type: String, required: true }, 
+    status: { type: String, default: "ready" }, 
     summary: SummarySchema,
     sections: [SectionSchema],
     experiments: [ExperimentSchema],
-    // Populated only after solution validation + user approval
     timeline: [TimelineItemSchema]
   },
   { timestamps: true }
 );
+
+ResearchDocSchema.index({ userId: 1, projectId: 1 }, { unique: true });
 
 export default mongoose.model("ResearchDoc", ResearchDocSchema);

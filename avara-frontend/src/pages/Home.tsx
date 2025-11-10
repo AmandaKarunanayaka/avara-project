@@ -1,22 +1,59 @@
-import type { SVGProps } from "react"
-import type { JSX } from "react/jsx-runtime"
-import "../css/home.css"
-import { Input } from "@/components/ui/input"
-import { useState } from "react"
+import type { SVGProps } from "react";
+import type { JSX } from "react/jsx-runtime";
+import "../css/home.css";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
-  const [showModal, setShowModal] = useState(false)
-  const [projectName, setProjectName] = useState("")
+  const [showModal, setShowModal] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const navigate = useNavigate();
 
-  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && projectName.trim() !== "") {
-      window.location.href = "/question"
+  const getToken = () => localStorage.getItem("token") || "";
+
+  const createProject = async () => {
+    const token = getToken();
+    if (!token) return alert("Please login first.");
+
+    const projectId = crypto.randomUUID();
+
+    const res = await fetch("http://localhost:3004/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        projectId,
+        name: projectName.trim(),
+      })
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      console.error("Create project failed:", t);
+      alert("Failed to create project");
+      return;
     }
-  }
+
+    navigate("/question", {
+      state: {
+        startupName: projectName.trim(),
+        projectId
+      }
+    });
+  };
+
+  const handleEnter = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && projectName.trim() !== "") {
+      await createProject();
+    }
+  };
 
   return (
     <>
-      <div className={`flex flex-col gap-4 h-full content ${showModal ? "blur-sm" : ""}`}> 
+      <div className={`flex flex-col gap-4 h-full content ${showModal ? "blur-sm" : ""}`}>
         <section className="main-content">
           <div className="header">
             <h1 className="scroll-m-20 text-center text-4xl tracking-tight text-balance heading">
@@ -38,7 +75,7 @@ export default function Home() {
         {/* Cards Section */}
         <div className="content-cards">
           <div className="grid auto-rows-min gap-4 md:grid-cols-4">
-            {/* First Card - Add Project */}
+            {/* Add Project */}
             <div
               className="aspect-video rounded-xl bg-muted/50 flex items-center justify-center cursor-pointer hover:bg-muted transition"
               onClick={() => setShowModal(true)}
@@ -53,12 +90,11 @@ export default function Home() {
         </div>
 
         <div className="flex-1 rounded-xl bg-muted/50 min-h-0 large-card" />
-
       </div>
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
+        <div className="input-box fixed inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="bg-black rounded-xl p-6 w-[90%] max-w-md shadow-xl text-white">
             <h2 className="text-xl font-semibold mb-4">New Project</h2>
             <Input
@@ -72,17 +108,17 @@ export default function Home() {
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => setShowModal(false)}
-                className="w-32 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600"
+                className="w-32 px-4 py-2 rounded-lg bg-transparent border border-white/80 hover:bg-white/10"
               >
                 Close
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (projectName.trim() !== "") {
-                    window.location.href = "/question"
+                    await createProject();
                   }
                 }}
-                className="w-32 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700"
+                className="w-32 px-4 py-2 rounded-lg bg-yellow-500 text-black hover:bg-yellow-600"
               >
                 Continue
               </button>
@@ -91,40 +127,25 @@ export default function Home() {
         </div>
       )}
     </>
-  )
+  );
 }
 
 function SearchIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+      viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.3-4.3" />
     </svg>
-  )
+  );
 }
 
 function PlusIcon(props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none"
+      viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
     </svg>
-  )
+  );
 }

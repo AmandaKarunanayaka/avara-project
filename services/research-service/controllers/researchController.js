@@ -2,12 +2,10 @@ import createError from "http-errors";
 import { z } from "zod";
 import ProjectContext from "../models/ProjectContext.js";
 import ResearchDoc from "../models/ResearchDoc.js";
-import Source from "../models/Source.js";
 import { decideValidation } from "../services/decision.js";
 import { synthesizeDocument } from "../services/synthesizer.js";
 import { normalizeResearchDoc } from "../services/normalizeDoc.js";
 
-/** --------- Schemas ---------- */
 const intakeSchema = z.object({
   projectId: z.string().min(1),
   name: z.string().min(1),
@@ -29,20 +27,22 @@ const advanceSchema = z.object({
   approveProceedToGTM: z.boolean().optional()
 });
 
-/** --------- Controllers ---------- */
 export const startResearch = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const parsed = intakeSchema.parse(req.body);
     const { projectId, ...intake } = parsed;
 
-    console.log("🚀 Starting research for:", projectId);
-    console.log("📝 Intake:", JSON.stringify(intake, null, 2));
+    console.log("userId:", userId);
+    console.log("Starting research for:", projectId);
+    console.log("Intake:", JSON.stringify(intake, null, 2));
 
     const gate = decideValidation(intake);
 
     await ProjectContext.findOneAndUpdate(
-      { projectId },
+      { userId, projectId },
       {
+        userId,
         projectId,
         intake,
         state: "research",
@@ -51,45 +51,43 @@ export const startResearch = async (req, res, next) => {
           solutionValidationNeeded: gate.needSolution
         }
       },
-      { upsert: true }
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
-    // MVP: no external sources yet
     const raw = await synthesizeDocument({ intake, sources: [], gtms: false });
-    
-    // CRITICAL DEBUG: See what AI actually returned
-    console.log("🤖 AI returned:");
+
+    console.log("AI returned:");
     console.log("  - Sections:", raw.sections?.length || 0);
     console.log("  - Experiments:", raw.experiments?.length || 0);
     console.log("  - First section HTML length:", raw.sections?.[0]?.html?.length || 0);
-    console.log("  - First section HTML preview:", raw.sections?.[0]?.html?.substring(0, 100) || "N/A");
-    
+    console.log("  - First section preview:", raw.sections?.[0]?.html?.substring(0, 100) || "N/A");
+
     const docJson = normalizeResearchDoc(raw, { projectId });
-    
-    console.log("✅ Normalized doc:");
+
+    console.log("Normalized doc:");
     console.log("  - Sections:", docJson.sections?.length || 0);
     console.log("  - Experiments:", docJson.experiments?.length || 0);
 
     const doc = await ResearchDoc.findOneAndUpdate(
-      { projectId },
-      { $set: docJson },
+      { userId, projectId },
+      { $set: { userId, projectId, ...docJson } },
       { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
     );
 
-    console.log("💾 Saved to DB, returning response");
+    console.log("💾 Saved to DB for user:", userId);
 
     res.json({ gate, doc });
   } catch (err) {
-    console.error("❌ Error in startResearch:", err);
+    console.error("Error in startResearch:", err);
     next(err);
   }
 };
 
-// 2) Get current doc
 export const getResearchDoc = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const { projectId } = req.params;
-    const doc = await ResearchDoc.findOne({ projectId });
+    const doc = await ResearchDoc.findOne({ userId, projectId });
     if (!doc) throw createError(404, "Research document not found");
     res.json(doc);
   } catch (err) {
@@ -97,20 +95,17 @@ export const getResearchDoc = async (req, res, next) => {
   }
 };
 
-// 3) Advance gates via user approvals (Postman for now)
-// - approveExperiments: marks experiments accepted
-// - approveProceedToGTM: ONLY allowed if solution is validated (summary.solution.state === 'validated')
 export const advanceGates = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const { projectId, approveExperiments, approveProceedToGTM } = advanceSchema.parse(req.body);
 
-    const ctx = await ProjectContext.findOne({ projectId });
+    const ctx = await ProjectContext.findOne({ userId, projectId });
     if (!ctx) throw createError(404, "Project not found");
 
-    const doc = await ResearchDoc.findOne({ projectId });
+    const doc = await ResearchDoc.findOne({ userId, projectId });
     if (!doc) throw createError(404, "Doc not found");
 
-    // 3a) approve experiments gate
     if (approveExperiments === true) {
       console.log("✓ Approving experiments gate");
       ctx.gates.userApprovedExperiments = true;
@@ -118,12 +113,10 @@ export const advanceGates = async (req, res, next) => {
       await ctx.save();
     }
 
-    // 3b) approve proceed to GTM (requires solution validated)
     if (approveProceedToGTM === true) {
-      console.log("✓ Attempting GTM approval...");
-      
+      console.log("Attempting GTM approval...");
       if (doc.summary?.solution?.state !== "validated") {
-        console.log("❌ Solution not validated:", doc.summary?.solution?.state);
+        console.log("Solution not validated:", doc.summary?.solution?.state);
         throw createError(400, "Cannot proceed to GTM: solution not validated");
       }
 
@@ -131,20 +124,17 @@ export const advanceGates = async (req, res, next) => {
       ctx.state = "gtm_ready";
       await ctx.save();
 
-      console.log("🚀 Generating GTM sections...");
-      
-      // Generate GTM sections + timeline now (ONE call)
+      console.log("Generating GTM sections...");
       const gtmdocRaw = await synthesizeDocument({
         intake: ctx.intake,
-        sources: [], // TODO: pass real sources when search is integrated
+        sources: [],
         gtms: true
       });
-      
-      console.log("🤖 GTM AI returned:", gtmdocRaw.sections?.length || 0, "sections");
-      
+
+      console.log("GTM AI returned:", gtmdocRaw.sections?.length || 0, "sections");
+
       const gtmdoc = normalizeResearchDoc(gtmdocRaw, { projectId });
 
-      // Merge: keep earlier sections, replace/add GTM sections & timeline, update summary.nextStep
       doc.sections = mergeSections(doc.sections, gtmdoc.sections);
       doc.timeline = gtmdoc.timeline || [];
       doc.summary = {
@@ -153,20 +143,19 @@ export const advanceGates = async (req, res, next) => {
         etaDays: 60
       };
       await doc.save();
-      
-      console.log("✅ GTM sections merged and saved");
+
+      console.log("GTM sections merged and saved");
     }
 
     res.json({ ok: true, context: ctx, doc });
   } catch (err) {
-    console.error("❌ Error in advanceGates:", err);
+    console.error("Error in advanceGates:", err);
     next(err);
   }
 };
 
-/** --------- Helpers ---------- */
 function mergeSections(existing = [], incoming = []) {
-  const map = new Map(existing.map((s) => [s.id, s]));
+  const map = new Map(existing.map(s => [s.id, s]));
   for (const s of incoming) map.set(s.id, s);
   return Array.from(map.values());
 }

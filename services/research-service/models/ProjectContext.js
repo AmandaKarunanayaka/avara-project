@@ -21,16 +21,16 @@ const GatesSchema = new mongoose.Schema(
   {
     problemValidationNeeded: { type: Boolean, default: false },
     solutionValidationNeeded: { type: Boolean, default: false },
-
-    userApprovedExperiments: { type: Boolean, default: false }, 
-    userApprovedProceedToGTM: { type: Boolean, default: false } 
+    userApprovedExperiments: { type: Boolean, default: false },
+    userApprovedProceedToGTM: { type: Boolean, default: false }
   },
   { _id: false }
 );
 
 const ProjectContextSchema = new mongoose.Schema(
   {
-    projectId: { type: String, index: true, unique: true },
+    userId: { type: mongoose.Types.ObjectId, ref: "User", index: true, required: true },
+    projectId: { type: String, required: true }, 
     intake: IntakeSchema,
     state: {
       type: String,
@@ -41,5 +41,7 @@ const ProjectContextSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+ProjectContextSchema.index({ userId: 1, projectId: 1 }, { unique: true });
 
 export default mongoose.model("ProjectContext", ProjectContextSchema);

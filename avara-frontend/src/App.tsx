@@ -57,7 +57,6 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root/home should be protected */}
         <Route element={<HomeLayoutWrapper />}>
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
         </Route>
@@ -65,7 +64,7 @@ export default function App() {
         {/* Project routes protected */}
         <Route element={<ProjectLayoutWrapper />}>
           <Route path="/Dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/Research" element={<PrivateRoute><Research /></PrivateRoute>} />
+          <Route path="/research/:projectId" element={<PrivateRoute><Research /></PrivateRoute>} />
         </Route>
 
         {/* Public / semi-public */}

@@ -1,9 +1,12 @@
 import { Router } from "express";
+import { requireUser } from "../middleware/auth.js";
+import { ensureProjectOwner } from "../middleware/ensureProjectOwner.js";
 import { startResearch, getResearchDoc, advanceGates } from "../controllers/researchController.js";
 
-const r = Router();
-r.post("/start", startResearch);
-r.get("/:projectId", getResearchDoc);
-r.post("/advance", advanceGates); // <-- Postman: approve gates
+const router = Router();
 
-export default r;
+router.post("/", requireUser, startResearch);
+router.get("/:projectId", requireUser, ensureProjectOwner, getResearchDoc);
+router.post("/advance", requireUser, ensureProjectOwner, advanceGates);
+
+export default router;

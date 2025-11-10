@@ -2,16 +2,15 @@
 
 .card {
     position: relative;
-    background: rgba(0, 0, 0, 0.3); /* semi-transparent background */
+    background: rgba(0, 0, 0, 0.3); 
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 2px solid rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    overflow: hidden; /* clip the pseudo-element */
+    overflow: hidden; 
     z-index: 1;
     font-family: "Noto Sans JP", sans-serif;
-
 }
 
 .card::before {
@@ -31,3 +30,82 @@
 .layout-left p{
     margin-left: 30px;
 }
+
+/* Title/description defaults (all pages) */
+.carousel-title {
+  line-height: 1.15;
+  text-align: center;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.5vw + 1rem, 2rem);
+}
+.carousel-desc {
+  text-align: center;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+}
+
+/* Intro page */
+.carousel-intro-title { 
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+
+ }
+.carousel-intro-desc  { opacity: 0.9; }
+
+/* Other pages */
+.carousel-step-title { 
+    letter-spacing: 0.2px;
+    margin-bottom: -4px;
+ }
+.carousel-step-desc  { 
+    opacity: 0.8;
+    margin-bottom: 10px;
+ }
+
+.card-content { padding-top: 50px !important; padding-bottom: 50px !important; }
+
+/* Global input styling for dark cards */
+.input-dark,
+.form-wrap input,
+.form-wrap textarea {
+  background-color: #1e1f25;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Make select dropdowns same as textarea/input */
+.form-wrap select,
+.form-wrap [role="combobox"],
+.form-wrap button[role="combobox"] {
+  background-color: #1e1f25 !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  color: #fff !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-dark:focus,
+.form-wrap input:focus,
+.form-wrap textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.6); 
+  box-shadow: none; 
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  align-items: start;
+  justify-items: center;
+  padding-top: 10px;
+}
+
+.skills-scroll {
+  padding-right: 8px;
+  margin-top: 0.5rem;
+}
+
