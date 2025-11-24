@@ -1,5 +1,5 @@
 import * as React from "react"
-import '/src/css/sidebar.css';
+import "/src/css/sidebar.css";
 import {
   Frame,
   LifeBuoy,
@@ -11,13 +11,13 @@ import {
   ClipboardList,
   ChartLine,
   FileChartPie,
-  House
-} from "lucide-react"
+  House,
+} from "lucide-react";
 
-import { NavMain } from "@/components/ui/secondary-sidebar/nav-main"
-import { NavProjects } from "@/components/ui/secondary-sidebar/nav-projects"
-import { NavSecondary } from "@/components/ui/secondary-sidebar/nav-secondary"
-import { NavUser } from "@/components/ui/secondary-sidebar/nav-user"
+import { NavMain } from "@/components/ui/secondary-sidebar/nav-main";
+import { NavProjects } from "@/components/ui/secondary-sidebar/nav-projects";
+import { NavSecondary } from "@/components/ui/secondary-sidebar/nav-secondary";
+import { NavUser } from "@/components/ui/secondary-sidebar/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -25,85 +25,92 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-} from "@/components/ui/sidebar"
-
-const data = {
-  user: {
-    name: "Amanda",
-    email: "amanda.kaveesharr@gmail.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "/Dashboard",
-      icon: House,
-      isActive: true
-    },
-    {
-      title: "Smart Research",
-      url: "/Research",
-      icon: Binoculars,
-      isActive: true
-    },
-    {
-      title: "Risk Analysis",
-      url: "#",
-      icon: FileChartPie,
-    },
-    {
-      title: "Business Core Setup",
-      url: "#",
-      icon: Cpu,
-    },
-    {
-      title: "Roadmap",
-      url: "#",
-      icon: Map,
-    },
-    {
-      title: "Task Allocation",
-      url: "#",
-      icon: ClipboardList,
-    },
-    {
-      title: "Performance Tracking",
-      url: "#",
-      icon: ChartLine,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+} from "@/components/ui/sidebar";
+import avaraLogo from "@/images/avara_logo.png";
+import { useParams } from "react-router-dom";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { projectId } = useParams<{ projectId?: string }>();
+
+  const dashboardUrl = projectId ? `/dashboard/${projectId}` : "/";
+  const researchUrl = projectId ? `/research/${projectId}` : "/";
+
+  const data = {
+    user: {
+      name: "Amanda",
+      email: "amanda.kaveesharr@gmail.com",
+      avatar: "/avatars/shadcn.jpg",
+    },
+    navMain: [
+      {
+        title: "Dashboard",
+        url: dashboardUrl,
+        icon: House,
+        isActive: true,
+      },
+      {
+        title: "Smart Research",
+        url: researchUrl,
+        icon: Binoculars,
+        isActive: true,
+      },
+      {
+        title: "Risk Analysis",
+        url: "#",
+        icon: FileChartPie,
+      },
+      {
+        title: "Business Core Setup",
+        url: "#",
+        icon: Cpu,
+      },
+      {
+        title: "Roadmap",
+        url: "#",
+        icon: Map,
+      },
+      {
+        title: "Task Allocation",
+        url: "#",
+        icon: ClipboardList,
+      },
+      {
+        title: "Performance Tracking",
+        url: "#",
+        icon: ChartLine,
+      },
+    ],
+    navSecondary: [
+      {
+        title: "Support",
+        url: "#",
+        icon: LifeBuoy,
+      },
+      {
+        title: "Feedback",
+        url: "#",
+        icon: Send,
+      },
+    ],
+    projects: [
+      {
+        name: "Design Engineering",
+        url: "#",
+        icon: Frame,
+      },
+      {
+        name: "Sales & Marketing",
+        url: "#",
+        icon: PieChart,
+      },
+      {
+        name: "Travel",
+        url: "#",
+        icon: Map,
+      },
+    ],
+  };
+
   return (
     <Sidebar variant="inset" {...props}>
       <SidebarHeader>
@@ -112,7 +119,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div>
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg overflow-hidden">
                 <img
-                  src={"./src/images/avara_logo.png"}
+                  src={avaraLogo}
                   alt="AVARA Logo"
                   className="w-full h-full object-contain"
                 />
@@ -134,5 +141,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

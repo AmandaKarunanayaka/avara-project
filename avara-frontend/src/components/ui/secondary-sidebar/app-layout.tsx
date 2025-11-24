@@ -8,7 +8,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="rounded-2xl overflow-hidden">
         {children}
       </SidebarInset>
     </SidebarProvider>

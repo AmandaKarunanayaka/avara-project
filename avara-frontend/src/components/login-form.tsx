@@ -32,10 +32,14 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
 
       if (res.ok && data.token) {
         localStorage.setItem("token", data.token);
+        if (typeof data.emailVerified !== "undefined") {
+          localStorage.setItem("emailVerified", JSON.stringify(data.emailVerified));
+        }
         navigate("/");
       } else {
         setError(data.message || "Login failed");
       }
+
     } catch (err) {
       console.error("Login error:", err);
       setError("Network error. Please try again.");
@@ -101,6 +105,16 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </Button>
+        <div className="text-sm text-center text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <button
+            type="button"
+            className="underline underline-offset-4"
+            onClick={() => navigate("/Register")}
+          >
+            Sign up
+          </button>
+        </div>
       </div>
     </form>
   );

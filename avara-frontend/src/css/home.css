@@ -7,12 +7,12 @@
 
 .main-content {
     margin-top: 30px;
-    margin-bottom: 30px;
+    margin-bottom: 26px;
 }
 
 .heading {
-    font-size: 3rem;
-    margin-bottom: 30px;
+    font-size: 2.7rem;
+    margin-bottom: 24px;
     font-family: "Noto Sans JP", sans-serif;
 }
 
@@ -55,10 +55,8 @@ input[type="search"]::-webkit-search-cancel-button {
     cursor: pointer;
 }
 
-.content-cards>.grid>div,
-.large-card {
+.content-cards > .grid > div {
     background: rgba(255, 255, 255, 0.151);
-    border: 1px solid rgba(255, 255, 255, 0.24);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
@@ -66,44 +64,17 @@ input[type="search"]::-webkit-search-cancel-button {
     transition: background 0.3s ease, box-shadow 0.4s ease, border-color 0.3s ease;
 }
 
-.content-cards>.grid>div:hover,
-.large-card:hover {
+.content-cards > .grid > div:hover {
     background: rgba(255, 255, 255, 0.267);
     box-shadow: 0 1px 2px rgba(255, 255, 255, 0.132);
-}
-
-.header-text {
-    margin-top: 20px;
-    font-size: 2.5rem;
-    font-weight: bold;
-    letter-spacing: 0.1px;
-}
-
-.custom-card {
-    border-radius: 0.75rem;
-    border: 1px solid rgb(235, 235, 235);
-    background: linear-gradient(to top, rgba(72, 72, 72, 0.3), rgba(30, 30, 31, 0.5));
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(7px);
-    color: white;
-}
-
-.larger-card {
-    border-radius: 0.75rem;
-    border: 1px solid rgb(235, 235, 235);
-    background: linear-gradient(to top, rgba(72, 72, 72, 0.3), rgba(30, 30, 31, 0.5));
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(7px);
-    color: white;
 }
 
 .input-box {
     font-family: "Noto Sans JP", sans-serif;
     backdrop-filter: blur(10px);
-
 }
 
-.input-box>div {
+.input-box > div {
     background-color: #2a2b32;
     border: 1px solid #3f4047;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -147,4 +118,60 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .input-box button:first-child {
     border: 1.5px solid #fff;
+}
+
+.filter-trigger {
+    border: 1px solid rgb(235, 235, 235, 0.8);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 5rem;
+    justify-content: center;
+}
+
+.filter-trigger:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.25);
+}
+
+.caret {
+    opacity: 0.8;
+    font-size: 10px;
+}
+
+.filter-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    width: 180px;
+    background: #262626;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 6px 0;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    z-index: 50;
+}
+
+.filter-item {
+    padding: 10px 14px;
+    color: #e5e7eb;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-item:hover {
+    background: rgba(255,255,255,0.06);
+}
+
+.filter-item.active {
+    background: rgba(255,255,255,0.12);
+    color: white;
 }
