@@ -2,16 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
 
-dotenv.config();
+dotenv.config(); 
+const authRoutes = require('./routes/authRoutes.js');
 
 const app = express();
 
 const corsOptions = {
-  origin: ['http://localhost:3000','http://127.0.0.1:3000','http://localhost:5173','http://127.0.0.1:5173'],
-  methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-  allowedHeaders: ['Content-Type','Authorization'],
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 app.use(cors(corsOptions));
 
@@ -32,6 +32,8 @@ app.listen(PORT, async () => {
   console.log(`Auth service running on port ${PORT}`);
   try {
     if (!process.env.MONGO_URI) throw new Error('MONGO_URI is missing');
+    console.log('Connecting to MongoDB Atlas...');
+    mongoose.set('debug', true);
     await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,

@@ -1,3 +1,34 @@
 .arrow{
     margin-top: 4px;
 }
+
+header .breadcrumb, .breadcrumb, .breadcrumb * {
+  min-width: 0;
+}
+
+.breadcrumb .truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.arrow {
+  opacity: 0.6;
+}
+
+.app-content-stable {
+  min-width: 0;
+  overflow: auto;
+}
+
+.app-shell {          
+  height: 100dvh;
+  overflow: hidden;   
+  border-radius: 16px;
+}
+
+.app-scroll {        
+  height: 100%;
+  overflow: auto;
+  scrollbar-gutter: stable both-edges; 
+}

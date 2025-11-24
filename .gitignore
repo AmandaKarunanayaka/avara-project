@@ -1,0 +1,5 @@
+# Ignore ALL env files
+.env
+*.env
+services/*/.env
+*/.env
