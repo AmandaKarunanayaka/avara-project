@@ -12,7 +12,13 @@ router.post("/", requireUser, async (req, res) => {
 
   const proj = await Project.findOneAndUpdate(
     { userId: req.user.id, projectId },
-    { userId: req.user.id, projectId, name, industry, status: "draft" },
+    {
+      userId: req.user.id,
+      projectId,
+      name,
+      industry: industry || "",
+      status: "draft",
+    },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
 

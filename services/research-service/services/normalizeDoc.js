@@ -1,76 +1,160 @@
+// services/research-service/services/normalizeDoc.js
+
+/**
+ * Normalize the raw LLM response into a shape that matches ResearchDocSchema.
+ */
 export function normalizeResearchDoc(input, { projectId }) {
-  const safe = (v, d) => (v === null || v === undefined ? d : v);
+  const summaryIn = input?.summary || {};
+  const probIn = summaryIn.problem || {};
+  const solIn = summaryIn.solution || {};
+  const gtmIn = summaryIn.gtm || {};
 
-  // Summary
-  let summary = input?.summary;
-  if (typeof summary === "string") {
-    // LLM sometimes returns a paragraph; wrap it safely
-    summary = {
-      problem: { state: "refine", confidence: 0.5, why: summary.slice(0, 240) },
-      solution: { state: "refine", confidence: 0.5, why: "Generated text (coerced from string summary)" },
-      nextStep: "Review summary and rerun research",
-      effort: "S",
-      etaDays: 7
-    };
-  } else {
-    summary = {
-      problem: {
-        state: oneOf(safe(summary?.problem?.state, "refine"), ["validated","refine","not_validated"]),
-        confidence: num0to1(summary?.problem?.confidence, 0.5),
-        why: safe(summary?.problem?.why, "—")
-      },
-      solution: {
-        state: oneOf(safe(summary?.solution?.state, "refine"), ["validated","refine","no_solution"]),
-        confidence: num0to1(summary?.solution?.confidence, 0.5),
-        why: safe(summary?.solution?.why, "—")
-      },
-      nextStep: safe(summary?.nextStep, "Approve validation experiments"),
-      effort: oneOf(safe(summary?.effort, "S"), ["S","M","L"]),
-      etaDays: isFiniteNum(summary?.etaDays) ? summary.etaDays : 7
-    };
-  }
+  const summary = {
+    problem: {
+      state: strOneOf(
+        probIn.state,
+        ["validated", "unvalidated", "unclear", "none"],
+        "unclear"
+      ),
+      notes: (probIn.notes || "").toString(),
+    },
+    solution: {
+      state: strOneOf(
+        solIn.state,
+        ["validated", "unvalidated", "none", "unclear"],
+        "none"
+      ),
+      notes: (solIn.notes || "").toString(),
+    },
+    nextStep: (
+      summaryIn.nextStep ||
+      "Review this research with Avara and choose your next high-signal experiment."
+    ).toString(),
+    etaDays: toInt(summaryIn.etaDays, 30),
+    gtm: gtmIn
+      ? {
+          strategy: (gtmIn.strategy || "").toString(),
+          summary: (gtmIn.summary || "").toString(),
+          channels: Array.isArray(gtmIn.channels)
+            ? gtmIn.channels.map((c) => c.toString())
+            : [],
+          confidence: isFiniteNum(gtmIn.confidence)
+            ? Number(gtmIn.confidence)
+            : undefined,
+        }
+      : undefined,
+  };
 
-  // Sections
-  const sections = Array.isArray(input?.sections) ? input.sections : [];
-  const normalizedSections = sections.map((s, idx) => ({
-    id: String(s?.id ?? `section_${idx}`),
-    title: String(s?.title ?? "Untitled"),
-    critical: Boolean(s?.critical ?? false),
-    html: String(s?.html ?? "<p>Empty</p>"),
-    citations: Array.isArray(s?.citations) ? s.citations.map(c => ({
-      url: String(c?.url ?? ""),
-      title: String(c?.title ?? ""),
-      date: String(c?.date ?? ""),
-      note: String(c?.note ?? "")
-    })) : []
-  }));
+  const sections = Array.isArray(input?.sections)
+    ? input.sections.map((s, idx) => ({
+        id: (s?.id || `section_${idx}`).toString(),
+        title: (s?.title || "Untitled").toString(),
+        kind: (s?.kind || "generic").toString(),
+        html: (s?.html || "<p>Empty</p>").toString(),
+      }))
+    : [];
 
-  // Experiments
-  const experiments = Array.isArray(input?.experiments) ? input.experiments.map((e) => ({
-    title: String(e?.title ?? "Experiment"),
-    metric: String(e?.metric ?? "Define success metric"),
-    deadline: e?.deadline ? new Date(e.deadline) : undefined
-  })) : [];
+  const experiments = Array.isArray(input?.experiments)
+    ? input.experiments.map((e, idx) => ({
+        id: (e?.id || `exp_${idx}`).toString(),
+        title: (e?.title || "Experiment").toString(),
+        hypothesis: (e?.hypothesis || "").toString(),
+        metric: (e?.metric || "").toString(),
+        status: (e?.status || "planned").toString(),
+      }))
+    : [];
 
-  // Timeline (optional)
-  const timeline = Array.isArray(input?.timeline) ? input.timeline.map((t) => ({
-    week: toInt(t?.week, 1),
-    title: String(t?.title ?? "Milestone"),
-    deliverable: String(t?.deliverable ?? "—"),
-    exitCriteria: String(t?.exitCriteria ?? "—")
-  })) : [];
+  const timeline = Array.isArray(input?.timeline)
+    ? input.timeline.map((t, idx) => ({
+        label: (t?.label || `Milestone ${idx + 1}`).toString(),
+        etaDays: isFiniteNum(t?.etaDays) ? Number(t.etaDays) : undefined,
+      }))
+    : [];
+
+  const personas = Array.isArray(input?.personas)
+    ? input.personas.map((p, idx) => ({
+        id: (p?.id || `persona_${idx}`).toString(),
+        type: (p?.type || "primary").toString(),
+        title: (p?.title || "").toString(),
+        description: (p?.description || "").toString(),
+        confidence: isFiniteNum(p?.confidence)
+          ? Number(p.confidence)
+          : undefined,
+      }))
+    : [];
+
+  const competitors = Array.isArray(input?.competitors)
+    ? input.competitors.map((c) => ({
+        name: (c?.name || "").toString(),
+        positioning: (c?.positioning || "").toString(),
+        strengths: (c?.strengths || "").toString(),
+        weaknesses: (c?.weaknesses || "").toString(),
+        overlap: (c?.overlap || "").toString(),
+      }))
+    : [];
+
+  const metaIn = input?.meta || {};
+  const meta = {
+    spa: metaIn.spa || undefined,
+    clarifyingQuestions: Array.isArray(metaIn.clarifyingQuestions)
+      ? metaIn.clarifyingQuestions.map((q) => q.toString())
+      : [],
+  };
+
+  // 🔹 Analysis (PEST + SWOT) passthrough
+  const analysisIn = input?.analysis || {};
+  const pestIn = analysisIn.pest || {};
+  const swotIn = analysisIn.swot || {};
+
+  const analysis = {
+    pest: analysisIn.pest
+      ? {
+          political: (pestIn.political || "").toString(),
+          economic: (pestIn.economic || "").toString(),
+          social: (pestIn.social || "").toString(),
+          technological: (pestIn.technological || "").toString(),
+          environmental: (pestIn.environmental || "").toString(),
+          legal: (pestIn.legal || "").toString(),
+        }
+      : undefined,
+    swot: analysisIn.swot
+      ? {
+          strengths: arrOfStrings(swotIn.strengths),
+          weaknesses: arrOfStrings(swotIn.weaknesses),
+          opportunities: arrOfStrings(swotIn.opportunities),
+          threats: arrOfStrings(swotIn.threats),
+        }
+      : undefined,
+  };
 
   return {
     projectId,
     summary,
-    sections: normalizedSections,
+    sections,
     experiments,
-    timeline
+    personas,
+    competitors,
+    timeline,
+    meta,
+    analysis,
   };
 }
 
-/* ---------- helpers ---------- */
-function oneOf(val, list) { return list.includes(val) ? val : list[0]; }
-function num0to1(v, d=0.5){ const n = Number(v); return isFinite(n) ? Math.max(0, Math.min(1, n)) : d; }
-function isFiniteNum(v){ return Number.isFinite(Number(v)); }
-function toInt(v, d=0){ const n = parseInt(v, 10); return Number.isFinite(n) ? n : d; }
+function strOneOf(val, allowed, fallback) {
+  return allowed.includes(val) ? val : fallback;
+}
+
+function isFiniteNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n);
+}
+
+function toInt(v, d = 0) {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : d;
+}
+
+function arrOfStrings(v) {
+  if (!Array.isArray(v)) return [];
+  return v.map((x) => x?.toString?.() ?? "").filter(Boolean);
+}

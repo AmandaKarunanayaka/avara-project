@@ -11,7 +11,6 @@ const ProjectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// per user uniquesness 
 ProjectSchema.index({ userId: 1, projectId: 1 }, { unique: true });
 ProjectSchema.index({ userId: 1, createdAt: -1 });
 
