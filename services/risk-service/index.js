@@ -1,21 +1,78 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
+// services/risk-service/index.js
+import mongoose from "mongoose";
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import pino from "pino";
+import pinoHttp from "pino-http";
+import createError from "http-errors";
+import { connectDB } from "./config/db.js";
 
-dotenv.config();
+import riskRoutes from "./routes/riskRoutes.js";
 
-const app = express();
-app.use(express.json());
+const logger = pino({ name: process.env.SERVICE_NAME || "risk-service" });
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error(err));
+async function main() {
+  console.log("Connecting to MongoDB for risk-service...");
+  // Optional: comment this out if you don't want noisy logs
+  // mongoose.set("debug", true);
 
-app.use('/api/auth', authRoutes);
+  await connectDB(process.env.MONGO_URI);
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Auth service running on port ${PORT}`));
+  const app = express();
+
+  const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+
+  // 🔹 CORS
+  app.use(
+    cors({
+      origin: allowedOrigin,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
+  app.options(
+    "*",
+    cors({
+      origin: allowedOrigin,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
+  app.use(express.json({ limit: "2mb" }));
+  app.use(pinoHttp({ logger }));
+
+  // Healthcheck
+  app.get("/health", (req, res) => {
+    res.json({
+      ok: true,
+      service: process.env.SERVICE_NAME || "risk-service",
+    });
+  });
+
+  // 🔹 API routes
+  app.use("/risk", riskRoutes);
+
+  // 404 handler
+  app.use((req, res, next) => next(createError(404, "Not found")));
+
+  // Error handler
+  app.use((err, req, res, next) => {
+    req.log?.error({ err }, "Unhandled error");
+    res.status(err.status || 500).json({ error: err.message || "Server error" });
+  });
+
+  const port = Number(process.env.PORT || 3005);
+  app.listen(port, () => {
+    logger.info(`risk-service listening on :${port}`);
+  });
+}
+
+main().catch((e) => {
+  logger.error(e, "Fatal startup error");
+  process.exit(1);
+});

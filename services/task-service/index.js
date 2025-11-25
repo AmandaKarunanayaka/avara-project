@@ -1,13 +1,76 @@
-// index.js
-const express = require('express');
-const app = express();
+// services/risk-service/index.js
+import mongoose from "mongoose";
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import pino from "pino";
+import pinoHttp from "pino-http";
+import createError from "http-errors";
+import { connectDB } from "./config/db.js";
 
-const PORT = process.env.PORT || 3007;
+import taskRoutes from "./routes/taskRoutes.js";
 
-app.get('/', (req, res) => {
-  res.send(`Service running on port ${PORT}`);
-});
+const logger = pino({ name: process.env.SERVICE_NAME || "task-service" });
 
-app.listen(PORT, () => {
-  console.log(`Service started on port ${PORT}`);
+async function main() {
+  console.log("Connecting to MongoDB for task-service...");
+
+  await connectDB(process.env.MONGO_URI);
+
+  const app = express();
+
+  const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:3000";
+
+  // 🔹 CORS
+  app.use(
+    cors({
+      origin: allowedOrigin,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
+  app.options(
+    "*",
+    cors({
+      origin: allowedOrigin,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+    })
+  );
+
+  app.use(express.json({ limit: "2mb" }));
+  app.use(pinoHttp({ logger }));
+
+  // Healthcheck
+  app.get("/health", (req, res) => {
+    res.json({
+      ok: true,
+      service: process.env.SERVICE_NAME || "task-service",
+    });
+  });
+
+  // 🔹 API routes
+  app.use("/task", taskRoutes);
+
+  // 404 handler
+  app.use((req, res, next) => next(createError(404, "Not found")));
+
+  // Error handler
+  app.use((err, req, res, next) => {
+    req.log?.error({ err }, "Unhandled error");
+    res.status(err.status || 500).json({ error: err.message || "Server error" });
+  });
+
+  const port = Number(process.env.PORT || 3007);
+  app.listen(port, () => {
+    logger.info(`task-service listening on :${port}`);
+  });
+}
+
+main().catch((e) => {
+  logger.error(e, "Fatal startup error");
+  process.exit(1);
 });

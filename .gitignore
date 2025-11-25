@@ -3,3 +3,8 @@
 *.env
 services/*/.env
 */.env
+services/risk-service/.env
+services/core-business-service/.env
+services/roadmap-service/.env
+services/task-service/.env
+node_modules

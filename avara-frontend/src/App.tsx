@@ -9,6 +9,14 @@ import Research from './pages/Research';
 import Login from './pages/Login';
 import type { JSX } from 'react';
 import Register from "./pages/Register";
+import Risk from "./pages/Risk";
+import Core from "./pages/core";
+import Roadmap from "./pages/roadmap";
+import Task from "./pages/task";
+
+// inside your <Routes>:
+<Route path="/risk/:projectId" element={<Risk />} />
+
 
 
 function HomeLayoutWrapper() {
@@ -67,10 +75,18 @@ export default function App() {
           {/* parametric routes */}
           <Route path="/dashboard/:projectId" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/research/:projectId" element={<PrivateRoute><Research /></PrivateRoute>} />
+          <Route path="/risk/:projectId" element={<Risk />} />
+          <Route path="/core/:projectId" element={<Core />} />
+          <Route path="/roadmap/:projectId" element={<PrivateRoute><Roadmap /></PrivateRoute>} />
+          <Route path="/task/:projectId" element={<PrivateRoute><Task /></PrivateRoute>} />
 
           {/* legacy safety */}
           <Route path="/Dashboard" element={<Navigate to="/" replace />} />
           <Route path="/Research" element={<Navigate to="/" replace />} />
+          <Route path="/Risk" element={<Navigate to="/" replace />} />
+          <Route path="/Core" element={<Navigate to="/" replace />} />
+          <Route path="/Roadmap" element={<Navigate to="/" replace />} />
+          <Route path="/Task" element={<Navigate to="/" replace />} />
         </Route>
 
         {/* Public / semi-public */}

@@ -14,7 +14,6 @@ import { requireUser } from "../middleware/auth.js";
 
 const router = express.Router();
 
-
 // Protect all research routes
 router.use(requireUser);
 

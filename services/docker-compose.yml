@@ -8,14 +8,17 @@ services:
 
   chat-service:
     build:
-      context: .. 
+      context: ..
       dockerfile: services/chat-service/Dockerfile
     container_name: chat-service
     ports:
       - "3008:3008"
 
   core-business-service:
-    build: ./core-business-service
+    build:
+      context: ..
+      dockerfile: services/core-business-service/Dockerfile
+    container_name: core-business-service
     ports:
       - "3002:3002"
     depends_on:
@@ -39,21 +42,30 @@ services:
       - mongo
 
   risk-service:
-    build: ./risk-service
+    build:
+      context: ..
+      dockerfile: services/risk-service/Dockerfile
+    container_name: risk-service
     ports:
       - "3005:3005"
     depends_on:
       - mongo
 
   roadmap-service:
-    build: ./roadmap-service
+    build:
+      context: ..
+      dockerfile: services/roadmap-service/Dockerfile
+    container_name: roadmap-service
     ports:
       - "3006:3006"
     depends_on:
       - mongo
 
   task-service:
-    build: ./task-service
+    build:
+      context: ..
+      dockerfile: services/task-service/Dockerfile
+    container_name: task-service
     ports:
       - "3007:3007"
     depends_on:
