@@ -255,7 +255,23 @@ export default function Research() {
         if (projectId) fetchResearch();
     }, [projectId]);
 
-
+    const analyseRisk = async (scope: "problem" | "core" | "gtm") => {
+        try {
+            if (!projectId) return;
+            const token = getToken();
+            await fetch(`http://localhost:3005/risk/analyse`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ projectId, scope }),
+            });
+            // We don't need the response here – Risk.tsx will read via GET /risk/:projectId
+        } catch (err) {
+            console.error("Error analysing risk:", err);
+        }
+    };
 
     const handleSelectPrimaryPersona = async (personaId: string, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
@@ -301,14 +317,17 @@ export default function Research() {
                     projectId,
                     field: "problem",
                     text: doc.core.problem.text,
-                    validate: true
-                })
+                    validate: true,
+                }),
             });
 
             if (!res.ok) throw new Error("Failed to validate problem");
             const data = await res.json();
             setDoc(data.doc);
             setCtx(data.context);
+
+            // 🔹 Kick off PROBLEM-SCOPE risk analysis in parallel
+            analyseRisk("problem");
 
             // Poll for solution generation (since it's async)
             let attempts = 0;
@@ -317,7 +336,6 @@ export default function Research() {
                 if (attempts > 10) clearInterval(interval);
                 await fetchResearch();
             }, 2000);
-
         } catch (err) {
             console.error("Error validating problem:", err);
             alert("Failed to validate problem");
@@ -343,6 +361,9 @@ export default function Research() {
             const data = await res.json();
             setDoc(data.doc);
             setCtx(data.context);
+
+            // 🔹 Kick off CORE-SCOPE risk analysis
+            analyseRisk("core");
         } catch (err) {
             console.error(err);
             alert("Failed to lock core");
@@ -375,6 +396,55 @@ export default function Research() {
         }
     };
 
+    const generateRoadmap = async () => {
+        if (!projectId) return;
+        const token = getToken();
+        await fetch("http://localhost:3006/roadmap/generate", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ projectId }),
+        });
+    };
+
+
+    const generateCoreSetup = async () => {
+        try {
+            if (!projectId) return;
+            const token = getToken();
+            await fetch("http://localhost:3002/core/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ projectId }),
+            });
+        } catch (err) {
+            console.error("Error generating core setup:", err);
+        }
+    };
+
+        const generateTaskpage = async () => {
+        try {
+            if (!projectId) return;
+            const token = getToken();
+            await fetch("http://localhost:3007/task/generate", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ projectId }),
+            });
+        } catch (err) {
+            console.error("Error generating task setup:", err);
+        }
+    };
+
+
     const handleProceedToGTM = async () => {
         if (!doc) return;
         try {
@@ -386,7 +456,6 @@ export default function Research() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                // ✅ match backend advanceSchema: { approveProceedToGTM: boolean }
                 body: JSON.stringify({ approveProceedToGTM: true }),
             });
 
@@ -396,13 +465,17 @@ export default function Research() {
                 throw new Error(text || "Failed to proceed to GTM");
             }
 
-            // Backend will set gates.userApprovedProceedToGTM; just refresh state
             setIsGtmApproved(true);
             setTimeout(() => fetchResearch(), 500);
+
+            // 🔹 Kick off GTM-SCOPE risk analysis (delayed to ensure DB consistency)
+            setTimeout(() => analyseRisk("gtm"), 1000);
+            setTimeout(() => generateCoreSetup(), 1000);
+            setTimeout(() => generateRoadmap(), 1000);
+            setTimeout(() => generateTaskpage(), 1000);
+
         } catch (err) {
             console.error(err);
-            // Optional: keep local flag so UI doesn’t feel stuck if there’s a minor error
-            // setIsGtmApproved(true);
         } finally {
             setBusyGate(false);
         }
